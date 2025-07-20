@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Чат с Полиной</title>
     <style>
         body {
@@ -161,22 +162,27 @@
         }
         @media (max-width: 600px) {
             html, body {
-                min-height: 100vh;
-                height: 100vh;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
+                min-height: 100vh !important;
+                height: 100vh !important;
+                width: 100vw !important;
+                min-width: 100vw !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow-x: hidden !important;
+                background: #18191a !important;
             }
             .chat-container {
-                max-width: none;
-                min-width: 100vw;
-                width: 100vw;
-                margin: 0;
-                border-radius: 0;
-                min-height: 100vh;
-                height: 100vh;
-                box-shadow: none;
-                background: #242526;
+                width: 100vw !important;
+                min-width: 100vw !important;
+                max-width: 100vw !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                min-height: 100vh !important;
+                height: 100vh !important;
+                box-shadow: none !important;
+                background: #242526 !important;
+                display: flex !important;
+                flex-direction: column !important;
             }
             .header {
                 padding: 10px 8px 8px 8px;
