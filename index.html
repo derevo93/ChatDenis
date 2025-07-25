@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <title>Чат с Кирочкой</title>
+    <title>Чат с Полиной</title>
     <style>
         html, body {
             height: 100dvh;
@@ -355,24 +355,43 @@ function addMessage(text, type = 'text', fileUrl = null, isMe = true, silent = f
 }
 
 function sendToBot(formData) {
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            chat_id: CHAT_ID,
-            text: formData.text || '[медиа]',
-            disable_notification: false
-        })
-    });
+    if (formData.text) {
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: formData.text || '[медиа]',
+                disable_notification: false
+            })
+        });
+    }
     if (formData.file) {
         let type = formData.file.type || '';
-        let tgMethod = type.startsWith('image/') ? 'sendPhoto' :
-                       type.startsWith('video/') ? 'sendVideo' :
-                       type.startsWith('audio/') ? 'sendVoice' : null;
+        let tgMethod = null;
+        let fieldName = null;
+        if (type.startsWith('image/')) {
+            tgMethod = 'sendPhoto';
+            fieldName = 'photo';
+        } else if (type.startsWith('video/')) {
+            tgMethod = 'sendVideo';
+            fieldName = 'video';
+        } else if (type.startsWith('audio/')) {
+            tgMethod = 'sendVoice';
+            fieldName = 'voice';
+        } else {
+            // Если это Blob без типа (например, с canvas), пробуем как фото
+            tgMethod = 'sendPhoto';
+            fieldName = 'photo';
+        }
         if (tgMethod) {
             let data = new FormData();
             data.append('chat_id', CHAT_ID);
-            data.append(type.startsWith('audio/') ? 'voice' : (type.startsWith('image/') ? 'photo' : 'video'), formData.file);
+            let file = formData.file;
+            if (file instanceof Blob && !file.name) {
+                file = new File([file], 'photo.jpg', {type: 'image/jpeg'});
+            }
+            data.append(fieldName, file);
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${tgMethod}`, {
                 method: 'POST',
                 body: data
